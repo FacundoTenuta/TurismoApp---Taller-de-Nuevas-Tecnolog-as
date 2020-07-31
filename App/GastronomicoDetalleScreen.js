@@ -37,23 +37,23 @@ const GastronomicoDetalleScreen = ({route, navigation}) => {
 
   const [corazon, setCorazon] = useState(favoritos.some(element => element.item == item));
 
-  const {data:favs, loadingFavs} = useStorage();
+  const {data:favs, loadingFavs} = useStorage("favoritos");
 
-  const {data:imgs} = useStorageImages();
+  const {data:imgs} = useStorage("imagenesGastronomicos");
 
   const [imagenes, setImagenes] = useState([])
 
 
   useEffect(() => {
 
-    setCorazon(favoritos.some(element => element.item.id == item.id))
+    setCorazon(favoritos.some(element => (element.item.id == item.id & element.tipo == "gastronomico")))
 
   });
 
   useEffect(() => {
 
     if (favs != []) {
-      setCorazon(favs.some(element => element.item.id == item.id))
+      setCorazon(favs.some(element => (element.item.id == item.id & element.tipo == "gastronomico")))
     }
   
   }, [favs]);
@@ -85,7 +85,15 @@ const GastronomicoDetalleScreen = ({route, navigation}) => {
 
   const quitarFavorito = async() => {
 
-      setFavoritos(favoritos.filter(fav => fav.item.id != item.id))
+      setFavoritos(favoritos.filter(fav => {
+        if (fav.item.id != item.id){
+          return true
+        }else {
+          if (fav.tipo == "gastronomico") {
+              return false;
+          }
+        }
+      }))
 
       await AsyncStorage.setItem("favoritos", JSON.stringify(favoritos)).then(() => {
         setCorazon(false);
@@ -107,11 +115,22 @@ const GastronomicoDetalleScreen = ({route, navigation}) => {
 
   const guardarImagen = async(path) => {
 
-    let aux = imgs.find(element => element.id == item.id);
+    if (imgs != []) {
+      let aux = imgs.find(element => element.id == item.id);
+
+      if (!aux) {
+        
+        await AsyncStorage.setItem("imagenesGastronomicos", JSON.stringify([{id: item.id, imgs: [path]}, ...imgs])).then(() => {
+            setImagenes([path, ...imagenes])
+        })
+
+      } else {
+        await AsyncStorage.setItem("imagenesGastronomicos", JSON.stringify([{id: item.id, imgs: [path, ...aux.imgs]}, ...imgs])).then(() => {
+          setImagenes([path, ...imagenes])
+      })
+      }
       
-    await AsyncStorage.setItem("imagenes", JSON.stringify([{id: item.id, imgs: [path, ...aux.imgs]}, ...imgs])).then(() => {
-        setImagenes([path, ...imagenes])
-    })
+    }
 
     
   }
@@ -138,6 +157,7 @@ const GastronomicoDetalleScreen = ({route, navigation}) => {
       compressImageQuality: 0.7
     }).then(image => {
       guardarImagen(image.path);
+      console.log(image);
       laRef().current.snapTo(1);
     });
   }

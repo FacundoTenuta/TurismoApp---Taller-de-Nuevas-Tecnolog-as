@@ -10,7 +10,7 @@ const FavoritosListaScreen = ({navigation}) => {
 
   const {favoritos, setFavoritos} = useContext(FavoritosContext);
 
-  const {data:favs, loading} = useStorage();
+  const {data:favs, loading} = useStorage("favoritos");
 
   useEffect(() => {
     

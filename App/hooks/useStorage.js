@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import AsyncStorage from '@react-native-community/async-storage';
 
-export const useStorage = () => {
+export const useStorage = (tipo) => {
+
+    // console.warn(`${tipo}`);
 
     const [state, setState] = useState({
         data: [],
@@ -9,9 +11,9 @@ export const useStorage = () => {
     });
 
     const seteadoFavs = async() => {
-        return await AsyncStorage.getItem("favoritos").then(favs => {
+        return await AsyncStorage.getItem(tipo).then(favs => {
                 favs = JSON.parse(favs);
-
+                // console.warn(favs);
                 return favs;
 
         }); 
