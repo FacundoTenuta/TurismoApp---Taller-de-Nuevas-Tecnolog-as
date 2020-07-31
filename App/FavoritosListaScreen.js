@@ -65,7 +65,7 @@ const FavoritosListaScreen = ({navigation}) => {
                   initialNumToRender={25}
                   windowSize={10}
                   data={realData}
-                  ListEmptyComponent={<Text>Lista vacía</Text>}
+                  ListEmptyComponent={<Text style={{marginTop: 50, alignSelf:"center", fontSize: 20, fontStyle: "italic", color: "#828899" }}>Lista vacía</Text>}
                   renderItem={_renderFavorito}
                   keyExtractor={favorito => favorito.item.id.toString()}
                 />
