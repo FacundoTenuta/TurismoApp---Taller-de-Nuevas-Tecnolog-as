@@ -1,11 +1,9 @@
 import React, {useEffect, useState } from 'react';
-import { View, StyleSheet, Platform, Button, SafeAreaView, Text, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { PERMISSIONS, check, RESULTS, request } from 'react-native-permissions';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
-// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { View, StyleSheet, Button, SafeAreaView, Text, Image } from 'react-native';
 
-import Icon from 'react-native-vector-icons/FontAwesome';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
+import Geolocation from '@react-native-community/geolocation';
 
 import { SearchBarFavoritos } from './Components/SearchBarFavoritos';
 
@@ -19,15 +17,25 @@ const MapaScreen = ({route, navigation}) => {
   
   const [realData, setRealData] = useState(data);
 
-  const [coords, setCoords] = useState({
-        lat: -54.808224,
-        lon: -68.321953,
-  });
-
+  const [currentPosition, setCurrentPosition] = useState(null)
 
   const [activeMarker, setActiveMarker] = useState(null);
 
   const [miniDatos, setMiniDatos] = useState({});
+
+  useEffect(() => {
+
+    Geolocation.getCurrentPosition(position => {
+
+      setCurrentPosition({
+        lat: position.coords.latitude,
+        lon: position.coords.longitude
+      })
+
+    })
+
+
+  }, [])
 
   const mapMarkers = () => {
     return realData.map(alojamiento => <Marker
@@ -43,10 +51,6 @@ const MapaScreen = ({route, navigation}) => {
         event.stopPropagation();
         setActiveMarker(true);
         setMiniDatos(alojamiento);
-        setCoords({
-          lat: alojamiento.item.lat,
-          lon: alojamiento.item.lng,
-        })
       }}
     >
       {/* <View style={{ backgroundColor: '#40E9A4', padding: 10, borderRadius: 8}}>
@@ -61,21 +65,25 @@ const MapaScreen = ({route, navigation}) => {
           <SearchBarFavoritos data={data} setRealData={setRealData}/>
 
           <View style={styles.map}>
-            <MapView
-              provider={PROVIDER_GOOGLE}
-              style={styles.map}
-              region={{
-                latitude: coords.lat,
-                longitude: coords.lon,
-                latitudeDelta: 0.055,
-                longitudeDelta: 0.0121,
-              }}
-              
-              onPress={()=>{setActiveMarker(false)}}
-            >
-                {mapMarkers()}
-
-            </MapView>
+          {
+              !!currentPosition && (<MapView
+                                      provider={PROVIDER_GOOGLE}
+                                      showsUserLocation
+                                      style={styles.map}
+                                      initialRegion={{
+                                          latitude: currentPosition.lat,
+                                          longitude: currentPosition.lon,
+                                          latitudeDelta: 0.015,
+                                          longitudeDelta: 0.0121,
+                                        }}
+                                      
+                                      onPress={()=>{setActiveMarker(false)}}
+                                    >
+                        
+                                        {mapMarkers()}
+                        
+                                    </MapView>)
+            }
             <FAB
               style={styles.fab}
               icon="format-list-bulleted"
